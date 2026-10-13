@@ -46,6 +46,8 @@
 #include <CScrambleSoundGame.h>
 #include <CSuperCobraGame.h>
 #include <CSuperCobraSoundGame.h>
+#include <CTimePilotGame.h>
+#include <CTimePilotSoundGame.h>
 #include <CUniwarsGame.h>
 #include <CZaxxonGame.h>
 
@@ -93,6 +95,10 @@ static const SELECTOR s_gameSelector[] PROGMEM = {//0123456789abcde
                                                   {"S. Cobra   (K1)",  onSelectGame,    (void*) (CSuperCobraGame::createInstanceKonamiSet1),         false},
                                                   {"S. Cobra   (S1)",  onSelectGame,    (void*) (CSuperCobraGame::createInstanceSternSet1),          false},
                                                   {"S. Cobra  S(S1)",  onSelectGame,    (void*) (CSuperCobraSoundGame::createInstanceSternSet1),     false},
+                                                  {"Time Pilot (K1)",  onSelectGame,    (void*) (CTimePilotGame::createInstanceKonamiSet1),          false},
+                                                  {"Time Pilot (A1)",  onSelectGame,    (void*) (CTimePilotGame::createInstanceAtariSet1),           false},
+                                                  {"Time Pilot (C1)",  onSelectGame,    (void*) (CTimePilotGame::createInstanceCenturiSet1),         false},
+                                                  {"Time Pilot S(1)",  onSelectGame,    (void*) (CTimePilotSoundGame::createInstanceSet1),           false},
                                                   {"Uniwars     (1)",  onSelectGame,    (void*) (CUniwarsGame::createInstanceSet1),                   false},
                                                   {"Zaxxon      (1)",  onSelectGame,    (void*) (CZaxxonGame::createInstanceSet1),                   false},
                                                   {"Zaxxon      (2)",  onSelectGame,    (void*) (CZaxxonGame::createInstanceSet2),                   false},
