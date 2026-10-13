@@ -26,13 +26,10 @@
 //
 // ROM set, address, length & CRC are from MAME (src/mame/konami/timeplt.cpp).
 // The same sound ROM is used by all the Time Pilot sets.
-//
-// TODO: The data2n samples have not been generated (all 0x00) so the address
-//       line part of the ROM check will fail. Generate them from the ROM
-//       image with utilities/bytes.php.
+// The data2n samples were generated from the MAME ROM image.
 //
 static const ROM_DATA2N s_romData2nSet1[] PROGMEM  = { // 01   02   04   08   10   20   40   80  100  200  400  800
-                                                       {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, // tm7
+                                                       {0x00,0x30,0x00,0x32,0x32,0x32,0x3e,0x21,0x32,0xdd,0xaf,0xae}, // tm7
                                                        {0} }; // end of list
 
 static const ROM_REGION s_romRegionSet1[] PROGMEM = { //
