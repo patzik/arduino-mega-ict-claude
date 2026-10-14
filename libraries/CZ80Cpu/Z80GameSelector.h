@@ -93,6 +93,7 @@ static const SELECTOR s_gameSelector[] PROGMEM = {//0123456789abcde
                                                   {"Scorpion  (S2A)",  onSelectGame,    (void*) (CScorpionGame::createInstanceSet2A),                false},
                                                   {"Scorpion  S(S1)",  onSelectGame,    (void*) (CScorpionSoundGame::createInstanceSet1),            false},
                                                   {"Scramble   (S1)",  onSelectGame,    (void*) (CScrambleGame::createInstanceSet1),                 false},
+                                                  {"Scramble   (NP)",  onSelectGame,    (void*) (CScrambleGame::createInstanceNoProtSet1),          false},
                                                   {"Scramble  S(S1)",  onSelectGame,    (void*) (CScrambleSoundGame::createInstanceSet1),            false},
                                                   {"Scramble   (Z1)",  onSelectGame,    (void*) (CScrambleGame::createInstanceZacSet1),              false},
                                                   {"Scramble  S(Z1)",  onSelectGame,    (void*) (CScrambleSoundGame::createInstanceZacSet1),         false},
