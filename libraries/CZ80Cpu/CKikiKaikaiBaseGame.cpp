@@ -147,9 +147,13 @@ CKikiKaikaiBaseGame::CKikiKaikaiBaseGame(
     m_inWatchdogWrite(false),
     m_holdResetsValue(0x18)
 {
+    // The RAM shared with the video uses WAIT and needs extra time after it.
     m_z80Cpu = new CZ80ACpu(0,
                             onAddressRemap,
-                            this);
+                            this,
+                            NO_DATA_REMAP,
+                            NULL,
+                            CZ80ACpu::CYCLE_TYPE_KIKIKAI);
     m_cpu = m_z80Cpu;
     m_cpu->idle();
 
@@ -264,6 +268,13 @@ CKikiKaikaiBaseGame::cycleTypeSelect(
 
     switch (thisGame->m_z80Cpu->getCycleType())
     {
+        case CZ80ACpu::CYCLE_TYPE_KIKIKAI :
+        {
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_DEFAULT);
+            errorCustom->description = "OK: Default";
+            break;
+        }
+
         case CZ80ACpu::CYCLE_TYPE_DEFAULT :
         {
             thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_PUCKMAN);
@@ -287,8 +298,8 @@ CKikiKaikaiBaseGame::cycleTypeSelect(
 
         default :
         {
-            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_DEFAULT);
-            errorCustom->description = "OK: Default";
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_KIKIKAI);
+            errorCustom->description = "OK: KiKiKaiKai";
             break;
         }
     }

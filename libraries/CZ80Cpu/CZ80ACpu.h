@@ -44,7 +44,8 @@ class CZ80ACpu : public ICpu
             CYCLE_TYPE_DEFAULT,
             CYCLE_TYPE_PUCKMAN,
             CYCLE_TYPE_CRAZYKONG,
-            CYCLE_TYPE_LADYBUG
+            CYCLE_TYPE_LADYBUG,
+            CYCLE_TYPE_KIKIKAI
         } CycleType;
 
         //
@@ -188,6 +189,16 @@ class CZ80ACpu : public ICpu
 
         PERROR
         MREQwriteCrazyKong(
+            UINT16 *data
+        );
+
+        PERROR
+        MREQreadKikiKaikai(
+            UINT16 *data
+        );
+
+        PERROR
+        MREQwriteKikiKaikai(
             UINT16 *data
         );
 
