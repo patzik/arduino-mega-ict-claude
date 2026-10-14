@@ -81,6 +81,16 @@ class CZ80ACpu : public ICpu
             CycleType             cycleType                   = CYCLE_TYPE_DEFAULT
         );
 
+        //
+        // Change the cycle implementation in use, e.g. to try them on a new PCB.
+        //
+        void setCycleType(
+            CycleType cycleType
+        ) { m_cycleType = cycleType; }
+
+        CycleType getCycleType(
+        ) { return m_cycleType; }
+
         // ICpu Interface
         //
 

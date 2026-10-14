@@ -128,6 +128,7 @@ static const OUTPUT_REGION s_outputRegion[] PROGMEM = { //                      
 static const CUSTOM_FUNCTION s_customFunction[] PROGMEM = { //                                      "0123456789"
                                                             {CKikiKaikaiBaseGame::watchdogKick,     "WD Kick   "},
                                                             {CKikiKaikaiBaseGame::holdResetsSelect, "F008 Hold "},
+                                                            {CKikiKaikaiBaseGame::cycleTypeSelect,  "Cycle Type"},
                                                             {NO_CUSTOM_FUNCTION}}; // end of list
 
 
@@ -146,9 +147,10 @@ CKikiKaikaiBaseGame::CKikiKaikaiBaseGame(
     m_inWatchdogWrite(false),
     m_holdResetsValue(0x18)
 {
-    m_cpu = new CZ80ACpu(0,
-                         onAddressRemap,
-                         this);
+    m_z80Cpu = new CZ80ACpu(0,
+                            onAddressRemap,
+                            this);
+    m_cpu = m_z80Cpu;
     m_cpu->idle();
 
     // The VBLANK interrupt is on the INT pin.
@@ -247,6 +249,53 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
     ICpu                *cpu      = thisGame->m_cpu;
 
     return cpu->memoryWrite(s_KikiKaikaiResetAddress, thisGame->m_holdResetsValue);
+}
+
+
+//
+// Cycle through the Z80 bus cycle implementations, showing the new one.
+//
+PERROR
+CKikiKaikaiBaseGame::cycleTypeSelect(
+    void *cKikiKaikaiBaseGame
+)
+{
+    CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
+
+    switch (thisGame->m_z80Cpu->getCycleType())
+    {
+        case CZ80ACpu::CYCLE_TYPE_DEFAULT :
+        {
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_PUCKMAN);
+            errorCustom->description = "OK: Puckman";
+            break;
+        }
+
+        case CZ80ACpu::CYCLE_TYPE_PUCKMAN :
+        {
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_CRAZYKONG);
+            errorCustom->description = "OK: CrazyKong";
+            break;
+        }
+
+        case CZ80ACpu::CYCLE_TYPE_CRAZYKONG :
+        {
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_LADYBUG);
+            errorCustom->description = "OK: Ladybug";
+            break;
+        }
+
+        default :
+        {
+            thisGame->m_z80Cpu->setCycleType(CZ80ACpu::CYCLE_TYPE_DEFAULT);
+            errorCustom->description = "OK: Default";
+            break;
+        }
+    }
+
+    errorCustom->code = ERROR_SUCCESS;
+
+    return errorCustom;
 }
 
 

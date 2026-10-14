@@ -25,6 +25,7 @@
 #define CKikiKaikaiBaseGame_h
 
 #include "CGame.h"
+#include "CZ80ACpu.h"
 
 
 class CKikiKaikaiBaseGame : public CGame
@@ -53,6 +54,14 @@ class CKikiKaikaiBaseGame : public CGame
         // sound CPU & MCU in reset (D3 & D4 are unknown).
         //
         static PERROR holdResetsSelect(
+            void *cKikiKaikaiBaseGame
+        );
+
+        //
+        // Custom function to select the Z80 bus cycle timing, for
+        // investigating access to the RAM shared with the video.
+        //
+        static PERROR cycleTypeSelect(
             void *cKikiKaikaiBaseGame
         );
 
@@ -127,6 +136,7 @@ class CKikiKaikaiBaseGame : public CGame
         unsigned long m_watchdogTime;
         bool          m_inWatchdogWrite;
         UINT8         m_holdResetsValue;
+        CZ80ACpu     *m_z80Cpu;
 
 };
 
