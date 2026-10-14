@@ -31,9 +31,10 @@
 //
 // Watchdog Disable:
 //   Not needed. F018 has been confirmed on a PCB to be the watchdog and the
-//   tester writes it at least every 5ms during all bus accesses, and for a
-//   short time before the bus check. Between tests (no bus accesses) the
-//   board will still reset, this doesn't affect the tests.
+//   tester writes it at least every 5ms during all bus accesses. Between
+//   tests (no bus accesses) the board resets, so after the bus has been idle
+//   the watchdog is written for a while to let the board come out of reset
+//   before the access goes ahead, otherwise the first writes can be lost.
 //   The "WD Kick" custom function writes F018 continuously for 10 seconds.
 //
 // Board Designations:
@@ -77,11 +78,13 @@ static const UINT32 s_KikiKaikaiMcuRamBase   = 0xE800L;
 static const UINT32 s_KikiKaikaiWatchdog     = 0xF018L;
 
 //
-// The interval the watchdog is written at during bus accesses and how long
-// it is written for before the bus check to let the board come out of reset.
+// The interval the watchdog is written at during bus accesses, how long the
+// bus can be idle before the board may be resetting and how long it is then
+// written for to let the board come out of reset.
 //
 static const unsigned long s_watchdogIntervalInMs = 5;
-static const unsigned long s_watchdogSettleInMs   = 50;
+static const unsigned long s_watchdogIdleInMs     = 50;
+static const unsigned long s_watchdogSettleInMs   = 250;
 
 //
 // RAM region is the same for all games on this board set.
@@ -161,21 +164,14 @@ CKikiKaikaiBaseGame::~CKikiKaikaiBaseGame(
 
 
 //
-// The board resets between tests because nothing writes the watchdog, so
-// write it for a short time to let the board come out of reset before the
-// bus check looks at the RESET pin.
+// The bus check looks at the RESET pin before any bus access, so let the
+// board come out of reset first.
 //
 PERROR
 CKikiKaikaiBaseGame::busCheck(
 )
 {
-    unsigned long startTime = millis();
-
-    while ((millis() - startTime) < s_watchdogSettleInMs)
-    {
-        (void) m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
-        delay(1);
-    }
+    (void) watchdogSettle();
 
     return CGame::busCheck();
 }
@@ -251,8 +247,10 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
 
 //
 // No address remapping is done, this is used to write the watchdog at least
-// every s_watchdogIntervalInMs during bus accesses. The write itself comes
-// back through here so it is guarded against recursion.
+// every s_watchdogIntervalInMs during bus accesses. If the bus has been idle
+// long enough for the board to be resetting then it is given time to come
+// out of reset first. The watchdog writes come back through here so it is
+// guarded against recursion.
 //
 PERROR
 CKikiKaikaiBaseGame::onAddressRemap(
@@ -266,16 +264,51 @@ CKikiKaikaiBaseGame::onAddressRemap(
 
     *addressOut = addressIn;
 
-    if (!thisGame->m_inWatchdogWrite &&
-        ((millis() - thisGame->m_watchdogTime) >= s_watchdogIntervalInMs))
+    if (!thisGame->m_inWatchdogWrite)
     {
-        thisGame->m_inWatchdogWrite = true;
+        unsigned long idleTime = millis() - thisGame->m_watchdogTime;
 
-        error = thisGame->m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        if (idleTime >= s_watchdogIdleInMs)
+        {
+            error = thisGame->watchdogSettle();
+        }
+        else if (idleTime >= s_watchdogIntervalInMs)
+        {
+            thisGame->m_inWatchdogWrite = true;
 
-        thisGame->m_watchdogTime = millis();
-        thisGame->m_inWatchdogWrite = false;
+            error = thisGame->m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+
+            thisGame->m_watchdogTime = millis();
+            thisGame->m_inWatchdogWrite = false;
+        }
     }
+
+    return error;
+}
+
+
+PERROR
+CKikiKaikaiBaseGame::watchdogSettle(
+)
+{
+    PERROR error = errorSuccess;
+    unsigned long startTime = millis();
+
+    m_inWatchdogWrite = true;
+
+    while ((millis() - startTime) < s_watchdogSettleInMs)
+    {
+        error = m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        if (FAILED(error))
+        {
+            break;
+        }
+
+        delay(1);
+    }
+
+    m_watchdogTime = millis();
+    m_inWatchdogWrite = false;
 
     return error;
 }

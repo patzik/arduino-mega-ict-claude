@@ -103,6 +103,12 @@ class CKikiKaikaiBaseGame : public CGame
             UINT32 *addressOut
         );
 
+        //
+        // Write the watchdog long enough for the board to come out of reset.
+        //
+        PERROR watchdogSettle(
+        );
+
         static PERROR romBankSwitch(
             void *cKikiKaikaiBaseGame,
             UINT8 bank
