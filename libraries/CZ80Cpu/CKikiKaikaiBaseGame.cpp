@@ -98,6 +98,28 @@ static const unsigned long s_watchdogTimeoutInMs  = 3000;
 static const unsigned long s_holdResetsSettleInMs = 20;
 
 //
+// The time to wait after writing the watchdog before the next access. On a
+// PCB RAM writes were occasionally lost, mostly straight after the watchdog
+// writes, with the RAM keeping its previous value.
+//
+static const unsigned int  s_watchdogRecoveryInUs = 100;
+
+//
+// Write the watchdog and wait before the next access.
+//
+static PERROR
+writeWatchdog(
+    ICpu *cpu
+)
+{
+    PERROR error = cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+
+    delayMicroseconds(s_watchdogRecoveryInUs);
+
+    return error;
+}
+
+//
 // RAM region is the same for all games on this board set.
 //
 static const RAM_REGION s_ramRegion[] PROGMEM = { //                                                                         "012", "012345"
@@ -239,7 +261,7 @@ CKikiKaikaiBaseGame::watchdogKick(
 
     while ((millis() - startTime) < runTimeInMs)
     {
-        error = cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        error = writeWatchdog(cpu);
         if (FAILED(error))
         {
             break;
@@ -273,7 +295,7 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
 
         while ((millis() - startTime) < s_holdResetsSettleInMs)
         {
-            error = cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+            error = writeWatchdog(cpu);
             if (FAILED(error))
             {
                 break;
@@ -400,7 +422,7 @@ CKikiKaikaiBaseGame::onAddressRemap(
         {
             thisGame->m_inWatchdogWrite = true;
 
-            error = thisGame->m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+            error = writeWatchdog(thisGame->m_cpu);
 
             thisGame->m_watchdogTime = millis();
             thisGame->m_inWatchdogWrite = false;
@@ -438,7 +460,7 @@ CKikiKaikaiBaseGame::watchdogSettle(
     //
     while ((millis() - startTime) < s_watchdogTimeoutInMs)
     {
-        error = m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        error = writeWatchdog(m_cpu);
         if (FAILED(error))
         {
             break;
