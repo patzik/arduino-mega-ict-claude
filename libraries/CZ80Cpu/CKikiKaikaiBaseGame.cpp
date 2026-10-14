@@ -405,6 +405,16 @@ CKikiKaikaiBaseGame::onAddressRemap(
             thisGame->m_watchdogTime = millis();
             thisGame->m_inWatchdogWrite = false;
         }
+
+        //
+        // A reset during a test silently loses writes, so report it instead.
+        //
+        if (SUCCESS(error) && thisGame->m_z80Cpu->isResetActive())
+        {
+            errorCustom->code = ERROR_FAILED;
+            errorCustom->description = "E: RESET active";
+            error = errorCustom;
+        }
     }
 
     return error;
