@@ -30,9 +30,11 @@
 //   Z80 GND Pin 29
 //
 // Watchdog Disable:
-//   TBD. MAME marks F018 as "watchdog?" and the game writes it regularly.
-//   The "WD Kick" custom function writes F018 continuously for 10 seconds,
-//   if the board stops resetting while it runs then F018 is the watchdog.
+//   Not needed. F018 has been confirmed on a PCB to be the watchdog and the
+//   tester writes it at least every 5ms during all bus accesses, and for a
+//   short time before the bus check. Between tests (no bus accesses) the
+//   board will still reset, this doesn't affect the tests.
+//   The "WD Kick" custom function writes F018 continuously for 10 seconds.
 //
 // Board Designations:
 //   This is the main CPU on the single main board (K1100195A). It is the
@@ -57,7 +59,7 @@
 //   F000      W  D0-D2 ROM bank, D5 character bank
 //   F008      W  D0 flip (?), D1 MCU reset (0=reset), D2 sound CPU reset (0=reset)
 //   F010      R  IN3 - service, tilt, start 1 & 2
-//   F018      W  watchdog (?)
+//   F018      W  watchdog
 //   F800-FFFF RAM for the 4 player sub board link (not tested).
 //
 //   The joystick & coin inputs are read by the MCU and the DIP switches
@@ -73,6 +75,13 @@ static const UINT32 s_KikiKaikaiBankAddress  = 0xF000L;
 static const UINT32 s_KikiKaikaiResetAddress = 0xF008L;
 static const UINT32 s_KikiKaikaiMcuRamBase   = 0xE800L;
 static const UINT32 s_KikiKaikaiWatchdog     = 0xF018L;
+
+//
+// The interval the watchdog is written at during bus accesses and how long
+// it is written for before the bus check to let the board come out of reset.
+//
+static const unsigned long s_watchdogIntervalInMs = 5;
+static const unsigned long s_watchdogSettleInMs   = 50;
 
 //
 // RAM region is the same for all games on this board set.
@@ -103,7 +112,7 @@ static const INPUT_REGION s_inputRegion[] PROGMEM = { //                        
 static const OUTPUT_REGION s_outputRegion[] PROGMEM = { //                                  "012", "012345"
                                                         {NO_BANK_SWITCH, 0xF000L, 0x27, 0x00, " - ", "RomBnk"}, // ROM bank (D0-D2) & char bank (D5)
                                                         {NO_BANK_SWITCH, 0xF008L, 0xFF, 0x00, " - ", "Resets"}, // D1 MCU reset, D2 sound CPU reset
-                                                        {NO_BANK_SWITCH, 0xF018L, 0xFF, 0x00, " - ", "WD Res"}, // Watchdog (?)
+                                                        {NO_BANK_SWITCH, 0xF018L, 0xFF, 0x00, " - ", "WD Res"}, // Watchdog
                                                         {0}
                                                       }; // end of list
 
@@ -125,9 +134,13 @@ CKikiKaikaiBaseGame::CKikiKaikaiBaseGame(
            s_ramRegionWriteOnly,
            s_inputRegion,
            s_outputRegion,
-           s_customFunction)
+           s_customFunction),
+    m_watchdogTime(0),
+    m_inWatchdogWrite(false)
 {
-    m_cpu = new CZ80ACpu();
+    m_cpu = new CZ80ACpu(0,
+                         onAddressRemap,
+                         this);
     m_cpu->idle();
 
     // The VBLANK interrupt is on the INT pin.
@@ -144,6 +157,27 @@ CKikiKaikaiBaseGame::~CKikiKaikaiBaseGame(
 {
     delete m_cpu;
     m_cpu = (ICpu *) NULL;
+}
+
+
+//
+// The board resets between tests because nothing writes the watchdog, so
+// write it for a short time to let the board come out of reset before the
+// bus check looks at the RESET pin.
+//
+PERROR
+CKikiKaikaiBaseGame::busCheck(
+)
+{
+    unsigned long startTime = millis();
+
+    while ((millis() - startTime) < s_watchdogSettleInMs)
+    {
+        (void) m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        delay(1);
+    }
+
+    return CGame::busCheck();
 }
 
 
@@ -212,6 +246,38 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
     ICpu                *cpu      = thisGame->m_cpu;
 
     return cpu->memoryWrite(s_KikiKaikaiResetAddress, 0x00);
+}
+
+
+//
+// No address remapping is done, this is used to write the watchdog at least
+// every s_watchdogIntervalInMs during bus accesses. The write itself comes
+// back through here so it is guarded against recursion.
+//
+PERROR
+CKikiKaikaiBaseGame::onAddressRemap(
+    void   *cKikiKaikaiBaseGame,
+    UINT32  addressIn,
+    UINT32 *addressOut
+)
+{
+    CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
+    PERROR error = errorSuccess;
+
+    *addressOut = addressIn;
+
+    if (!thisGame->m_inWatchdogWrite &&
+        ((millis() - thisGame->m_watchdogTime) >= s_watchdogIntervalInMs))
+    {
+        thisGame->m_inWatchdogWrite = true;
+
+        error = thisGame->m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+
+        thisGame->m_watchdogTime = millis();
+        thisGame->m_inWatchdogWrite = false;
+    }
+
+    return error;
 }
 
 

@@ -35,6 +35,9 @@ class CKikiKaikaiBaseGame : public CGame
         // CKikiKaikaiBaseGame
         //
 
+        virtual PERROR busCheck(
+        );
+
         virtual PERROR interruptCheck(
         );
 
@@ -91,10 +94,24 @@ class CKikiKaikaiBaseGame : public CGame
 
     private:
 
+        //
+        // Used to write the watchdog regularly during all bus accesses.
+        //
+        static PERROR onAddressRemap(
+            void   *cKikiKaikaiBaseGame,
+            UINT32  addressIn,
+            UINT32 *addressOut
+        );
+
         static PERROR romBankSwitch(
             void *cKikiKaikaiBaseGame,
             UINT8 bank
         );
+
+    private:
+
+        unsigned long m_watchdogTime;
+        bool          m_inWatchdogWrite;
 
 };
 
