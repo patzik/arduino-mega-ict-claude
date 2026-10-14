@@ -30,7 +30,9 @@
 //   Z80 GND Pin 29
 //
 // Watchdog Disable:
-//   TBD.
+//   TBD. MAME marks F018 as "watchdog?" and the game writes it regularly.
+//   The "WD Kick" custom function writes F018 continuously for 10 seconds,
+//   if the board stops resetting while it runs then F018 is the watchdog.
 //
 // Board Designations:
 //   This is the main CPU on the single main board (K1100195A). It is the
@@ -70,6 +72,7 @@
 static const UINT32 s_KikiKaikaiBankAddress  = 0xF000L;
 static const UINT32 s_KikiKaikaiResetAddress = 0xF008L;
 static const UINT32 s_KikiKaikaiMcuRamBase   = 0xE800L;
+static const UINT32 s_KikiKaikaiWatchdog     = 0xF018L;
 
 //
 // RAM region is the same for all games on this board set.
@@ -105,9 +108,11 @@ static const OUTPUT_REGION s_outputRegion[] PROGMEM = { //                      
                                                       }; // end of list
 
 //
-// No custom functions implemented for this game.
+// Custom functions implemented for this game.
 //
-static const CUSTOM_FUNCTION s_customFunction[] PROGMEM = {{NO_CUSTOM_FUNCTION}}; // end of list
+static const CUSTOM_FUNCTION s_customFunction[] PROGMEM = { //                                      "0123456789"
+                                                            {CKikiKaikaiBaseGame::watchdogKick,     "WD Kick   "},
+                                                            {NO_CUSTOM_FUNCTION}}; // end of list
 
 
 CKikiKaikaiBaseGame::CKikiKaikaiBaseGame(
@@ -163,6 +168,35 @@ CKikiKaikaiBaseGame::interruptCheck(
     if (SUCCESS(error))
     {
         error = CGame::interruptCheck();
+    }
+
+    return error;
+}
+
+
+//
+// Write the suspected watchdog (F018) every 1ms for 10 seconds.
+//
+PERROR
+CKikiKaikaiBaseGame::watchdogKick(
+    void *cKikiKaikaiBaseGame
+)
+{
+    static const unsigned long runTimeInMs = 10000;
+    CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
+    ICpu                *cpu      = thisGame->m_cpu;
+    PERROR error = errorSuccess;
+    unsigned long startTime = millis();
+
+    while ((millis() - startTime) < runTimeInMs)
+    {
+        error = cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+        if (FAILED(error))
+        {
+            break;
+        }
+
+        delay(1);
     }
 
     return error;

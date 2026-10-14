@@ -39,6 +39,13 @@ class CKikiKaikaiBaseGame : public CGame
         );
 
         //
+        // Custom function to write the (suspected) watchdog continuously.
+        //
+        static PERROR watchdogKick(
+            void *cKikiKaikaiBaseGame
+        );
+
+        //
         // Hold the sound CPU & MCU in reset so they don't access the shared RAM.
         //
         static PERROR onBankSwitchHoldResets(
