@@ -49,6 +49,14 @@ class CKikiKaikaiBaseGame : public CGame
         );
 
         //
+        // Custom function to select the value written to F008 to hold the
+        // sound CPU & MCU in reset (D3 & D4 are unknown).
+        //
+        static PERROR holdResetsSelect(
+            void *cKikiKaikaiBaseGame
+        );
+
+        //
         // Hold the sound CPU & MCU in reset so they don't access the shared RAM.
         //
         static PERROR onBankSwitchHoldResets(
@@ -118,6 +126,7 @@ class CKikiKaikaiBaseGame : public CGame
 
         unsigned long m_watchdogTime;
         bool          m_inWatchdogWrite;
+        UINT8         m_holdResetsValue;
 
 };
 
