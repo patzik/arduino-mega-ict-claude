@@ -33,8 +33,9 @@
 //   Not needed. F018 has been confirmed on a PCB to be the watchdog and the
 //   tester writes it at least every 5ms during all bus accesses. Between
 //   tests (no bus accesses) the board resets, so after the bus has been idle
-//   the watchdog is written for a while to let the board come out of reset
-//   before the access goes ahead, otherwise the first writes can be lost.
+//   the watchdog is written until RESET has been released for a while before
+//   the access goes ahead, otherwise the first writes can be lost (seen on a
+//   PCB with a fixed 250ms wait).
 //   The "WD Kick" custom function writes F018 continuously for 10 seconds.
 //
 // Board Designations:
@@ -82,12 +83,13 @@ static const UINT32 s_KikiKaikaiWatchdog     = 0xF018L;
 
 //
 // The interval the watchdog is written at during bus accesses, how long the
-// bus can be idle before the board may be resetting and how long it is then
-// written for to let the board come out of reset.
+// bus can be idle before the board may be resetting, how long RESET must then
+// be released for before continuing and the maximum time to wait for that.
 //
 static const unsigned long s_watchdogIntervalInMs = 5;
 static const unsigned long s_watchdogIdleInMs     = 50;
-static const unsigned long s_watchdogSettleInMs   = 250;
+static const unsigned long s_watchdogSettleInMs   = 100;
+static const unsigned long s_watchdogTimeoutInMs  = 3000;
 
 //
 // RAM region is the same for all games on this board set.
@@ -386,13 +388,28 @@ CKikiKaikaiBaseGame::watchdogSettle(
 {
     PERROR error = errorSuccess;
     unsigned long startTime = millis();
+    unsigned long releaseTime = startTime;
 
     m_inWatchdogWrite = true;
 
-    while ((millis() - startTime) < s_watchdogSettleInMs)
+    //
+    // Write the watchdog until RESET has been released for s_watchdogSettleInMs.
+    // If it's never released the access goes ahead anyway and the bus check
+    // will report the RESET pin.
+    //
+    while ((millis() - startTime) < s_watchdogTimeoutInMs)
     {
         error = m_cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
         if (FAILED(error))
+        {
+            break;
+        }
+
+        if (m_z80Cpu->isResetActive())
+        {
+            releaseTime = millis();
+        }
+        else if ((millis() - releaseTime) >= s_watchdogSettleInMs)
         {
             break;
         }

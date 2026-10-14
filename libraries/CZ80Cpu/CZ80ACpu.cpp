@@ -314,6 +314,14 @@ CZ80ACpu::CZ80ACpu(
 {
 };
 
+bool
+CZ80ACpu::isResetActive(
+)
+{
+    return (digitalRead(g_pinMap40DIL[s__RESET_i.pin]) == LOW);
+}
+
+
 //
 // The idle function sets up the pins into the correct direction (input/output)
 // and idle state ready for the next bus cycle.

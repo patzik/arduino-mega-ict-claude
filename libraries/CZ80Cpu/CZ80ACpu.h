@@ -92,6 +92,12 @@ class CZ80ACpu : public ICpu
         CycleType getCycleType(
         ) { return m_cycleType; }
 
+        //
+        // Returns true if the target is holding the CPU in reset.
+        //
+        bool isResetActive(
+        );
+
         // ICpu Interface
         //
 
