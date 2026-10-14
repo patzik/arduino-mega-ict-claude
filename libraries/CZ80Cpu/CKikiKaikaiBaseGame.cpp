@@ -68,7 +68,8 @@
 //   by the YM2203 on the sound CPU, so they are not in the input list here.
 //
 //   The sound CPU & MCU are held in reset (F008 D1 & D2 = 0) before the RAM
-//   is tested so they don't interfere with it. MAME notes the game usually
+//   is tested so they don't interfere with it, followed by a short settling
+//   time as on a PCB the first RAM write straight after was lost. MAME notes the game usually
 //   sets the unknown D3 & D4 so they are set by default (F008 = 0x18). The
 //   "F008 Hold" custom function cycles the value used between 0x00, 0x08,
 //   0x10 & 0x18 for investigating the RAM access on a PCB.
@@ -90,6 +91,11 @@ static const unsigned long s_watchdogIntervalInMs = 5;
 static const unsigned long s_watchdogIdleInMs     = 50;
 static const unsigned long s_watchdogSettleInMs   = 100;
 static const unsigned long s_watchdogTimeoutInMs  = 3000;
+
+//
+// The time to let the board settle after writing F008.
+//
+static const unsigned long s_holdResetsSettleInMs = 20;
 
 //
 // RAM region is the same for all games on this board set.
@@ -254,7 +260,30 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
     CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
     ICpu                *cpu      = thisGame->m_cpu;
 
-    return cpu->memoryWrite(s_KikiKaikaiResetAddress, thisGame->m_holdResetsValue);
+    PERROR error = cpu->memoryWrite(s_KikiKaikaiResetAddress, thisGame->m_holdResetsValue);
+
+    //
+    // On a PCB the first RAM write straight after this was lost, so give the
+    // board time to settle with the MCU & sound CPU going into reset. The
+    // watchdog is written meanwhile by the address remap.
+    //
+    if (SUCCESS(error))
+    {
+        unsigned long startTime = millis();
+
+        while ((millis() - startTime) < s_holdResetsSettleInMs)
+        {
+            error = cpu->memoryWrite(s_KikiKaikaiWatchdog, 0x00);
+            if (FAILED(error))
+            {
+                break;
+            }
+
+            delay(1);
+        }
+    }
+
+    return error;
 }
 
 
