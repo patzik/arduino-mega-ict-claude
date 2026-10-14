@@ -36,6 +36,8 @@
 #include <CHustlerSoundGame.h>
 #include <CHyperSportsSoundGame.h>
 #include <CJackrabbitGame.h>
+#include <CKikiKaikaiGame.h>
+#include <CKikiKaikaiSoundGame.h>
 #include <CLadybugGame.h>
 #include <CMegaZoneSoundGame.h>
 #include <CPuckmanGame.h>
@@ -78,6 +80,8 @@ static const SELECTOR s_gameSelector[] PROGMEM = {//0123456789abcde
                                                   {"Hyper Sp  S(S1)",  onSelectGame,    (void*) (CHyperSportsSoundGame::createInstanceSet1),              false},
                                                   {"Jackrabbit  (1)",  onSelectGame,    (void*) (CJackrabbitGame::createInstanceSet1),               false},
                                                   {"Jackrabbit  (2)",  onSelectGame,    (void*) (CJackrabbitGame::createInstanceSet2),               false},
+                                                  {"KiKi KaiKai (1)",  onSelectGame,    (void*) (CKikiKaikaiGame::createInstanceSet1),               false},
+                                                  {"KiKi KaiKaiS(1)",  onSelectGame,    (void*) (CKikiKaikaiSoundGame::createInstanceSet1),          false},
                                                   {"Ladybug        ",  onSelectGame,    (void*) (CLadybugGame::createInstanceSet1),                  false},
                                                   {"Mega Zone S(S1)",  onSelectGame,    (void*) (CMegaZoneSoundGame::createInstanceSet1),            false},
                                                   {"Puckman    (S1)",  onSelectGame,    (void*) (CPuckmanGame::createInstanceSet1),                  false},
