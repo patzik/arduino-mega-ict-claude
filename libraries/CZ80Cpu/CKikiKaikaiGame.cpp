@@ -29,7 +29,7 @@
 // The 64KB H18 ROM is mapped in 16KB banks at 0x8000 so it is checked as
 // four regions, each with its own CRC.
 //
-// TODO: The data2n samples and bank CRCs have not been generated (all 0) so
+// TODO: The data2n samples and H18 bank CRCs have not been generated (all 0) so
 //       the ROM check will fail. Generate them from the ROM images.
 //
 static const ROM_DATA2N s_romData2nSet1[] PROGMEM  = { // 01   02   04   08   10   20   40   80  100  200  400  800 1000 2000 4000
@@ -41,7 +41,7 @@ static const ROM_DATA2N s_romData2nSet1[] PROGMEM  = { // 01   02   04   08   10
                                                        {0} }; // end of list
 
 static const ROM_REGION s_romRegionSet1[] PROGMEM = { //
-                                                      {NO_BANK_SWITCH,                            0x0000, 0x8000, s_romData2nSet1[0].data2n, 0x00000000, "H16"}, // a85-17.h16
+                                                      {NO_BANK_SWITCH,                            0x0000, 0x8000, s_romData2nSet1[0].data2n, 0xc141d5ab, "H16"}, // a85-17.h16
                                                       {CKikiKaikaiBaseGame::onBankSwitchRomBank0, 0x8000, 0x4000, s_romData2nSet1[1].data2n, 0x00000000, "H18"}, // a85-16.h18 0x0000-0x3FFF
                                                       {CKikiKaikaiBaseGame::onBankSwitchRomBank1, 0x8000, 0x4000, s_romData2nSet1[2].data2n, 0x00000000, "H18"}, // a85-16.h18 0x4000-0x7FFF
                                                       {CKikiKaikaiBaseGame::onBankSwitchRomBank2, 0x8000, 0x4000, s_romData2nSet1[3].data2n, 0x00000000, "H18"}, // a85-16.h18 0x8000-0xBFFF
