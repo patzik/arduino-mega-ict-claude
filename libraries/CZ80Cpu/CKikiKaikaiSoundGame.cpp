@@ -25,12 +25,10 @@
 
 //
 // ROM set, address, length & CRC are from MAME (src/mame/taito/kikikai.cpp).
-//
-// TODO: The data2n samples have not been generated (all 0x00) so the address
-//       line part of the ROM check will fail. Generate them from the ROM image.
+// The data2n samples were generated from the MAME ROM image.
 //
 static const ROM_DATA2N s_romData2nSet1[] PROGMEM  = { // 01   02   04   08   10   20   40   80  100  200  400  800 1000 2000 4000
-                                                       {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, // a85-11.f6
+                                                       {0xed,0x56,0x68,0xc3,0xe5,0xe5,0xd5,0xfe,0x79,0x16,0x01,0x01,0xb6,0x4f,0x08}, // a85-11.f6
                                                        {0} }; // end of list
 
 static const ROM_REGION s_romRegionSet1[] PROGMEM = { //

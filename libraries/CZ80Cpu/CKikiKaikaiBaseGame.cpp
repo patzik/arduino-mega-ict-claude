@@ -46,8 +46,9 @@
 //   the same file. MAME doesn't say which RAM IC is at which address so the
 //   RAM regions are tested byte wide with no IC location given ("-").
 //
-//   0000-7FFF ROM H16
-//   8000-BFFF ROM H18, banked 16KB at a time by F000 D0-D2
+//   0000-7FFF ROM H16 1st half
+//   8000-BFFF ROM banked 16KB at a time by F000 D0-D2,
+//             banks 0-3 are H18 and banks 4-5 are the H16 2nd half
 //   C000-E7FF RAM shared with the sound CPU (sound CPU 8000-A7FF)
 //   E800-E8FF RAM shared with the MCU (MC6801U4 A85-01 at H8)
 //   E900-EFFF RAM
@@ -226,5 +227,23 @@ CKikiKaikaiBaseGame::onBankSwitchRomBank3(
 )
 {
     return romBankSwitch(cKikiKaikaiBaseGame, 3);
+}
+
+
+PERROR
+CKikiKaikaiBaseGame::onBankSwitchRomBank4(
+    void *cKikiKaikaiBaseGame
+)
+{
+    return romBankSwitch(cKikiKaikaiBaseGame, 4);
+}
+
+
+PERROR
+CKikiKaikaiBaseGame::onBankSwitchRomBank5(
+    void *cKikiKaikaiBaseGame
+)
+{
+    return romBankSwitch(cKikiKaikaiBaseGame, 5);
 }
 

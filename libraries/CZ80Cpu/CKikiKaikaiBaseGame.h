@@ -46,7 +46,7 @@ class CKikiKaikaiBaseGame : public CGame
         );
 
         //
-        // Select the 16KB bank of the H18 ROM mapped at 0x8000.
+        // Select the 16KB ROM bank mapped at 0x8000.
         //
         static PERROR onBankSwitchRomBank0(
             void *cKikiKaikaiBaseGame
@@ -61,6 +61,14 @@ class CKikiKaikaiBaseGame : public CGame
         );
 
         static PERROR onBankSwitchRomBank3(
+            void *cKikiKaikaiBaseGame
+        );
+
+        static PERROR onBankSwitchRomBank4(
+            void *cKikiKaikaiBaseGame
+        );
+
+        static PERROR onBankSwitchRomBank5(
             void *cKikiKaikaiBaseGame
         );
 
