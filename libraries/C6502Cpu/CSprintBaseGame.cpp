@@ -51,7 +51,7 @@ static const RAM_REGION s_ramRegion[] PROGMEM = { //                            
 // This description is used for the byte-wide intensive random access memory test.
 //
 static const RAM_REGION s_ramRegionByteOnly[] PROGMEM = { //                                        "012", "012345"
-                                                          {NO_BANK_SWITCH, 0x0400, 0x07FF, 1, 0xFF, "RAM", "Progrm"}, // "program RAM"
+                                                          {NO_BANK_SWITCH, 0x0400, 0x07FF, 1, 0xFF, "F-K", "Progrm"}, // "program RAM", F3/F4, H3/H4, J3/J4 & K3/K4
                                                           {0}
                                                         }; // end of list
 
