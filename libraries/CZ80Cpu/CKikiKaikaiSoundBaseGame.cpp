@@ -42,7 +42,7 @@
 //
 // Notes:
 //   The memory map is taken from MAME (src/mame/taito/kikikai.cpp,
-//   base_state::sound_map). The RAM is the 16KB in the two TMM2064 at D2 & D3,
+//   base_state::sound_map). The RAM is the 16KB in the two TMM2064 at D1 & D3,
 //   tested byte wide as which chip holds which half isn't known.
 //
 //   0000-7FFF ROM F6
@@ -64,8 +64,8 @@
 // RAM region is the same for all games on this board set.
 //
 static const RAM_REGION s_ramRegion[] PROGMEM = { //                                        "012", "012345"
-                                                  {NO_BANK_SWITCH, 0x8000, 0xA7FF, 1, 0xFF, "D23", "Shared"}, // RAM shared with the main CPU, TMM2064 D2 & D3
-                                                  {NO_BANK_SWITCH, 0xA800, 0xBFFF, 1, 0xFF, "D23", "Prog. "}, // RAM, the rest of the TMM2064 D2 & D3
+                                                  {NO_BANK_SWITCH, 0x8000, 0xA7FF, 1, 0xFF, "D13", "Shared"}, // RAM shared with the main CPU, TMM2064 D1 & D3
+                                                  {NO_BANK_SWITCH, 0xA800, 0xBFFF, 1, 0xFF, "D13", "Prog. "}, // RAM, the rest of the TMM2064 D1 & D3
                                                   {0}
                                                 }; // end of list
 
