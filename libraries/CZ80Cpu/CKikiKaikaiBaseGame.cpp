@@ -49,9 +49,8 @@
 // Notes:
 //   The memory map is taken from MAME (src/mame/taito/kikikai.cpp,
 //   base_state::main_map) and the IC locations from the PCB layout in
-//   the same file. The two TMM2064 at D1 & D3 are the RAM shared with the
-//   sound CPU (16KB, the main CPU sees the first 10KB). Which 2KB RAM is at
-//   E800 isn't known yet so those regions have no IC location given ("-").
+//   the same file. MAME doesn't say which RAM IC is at which address so the
+//   RAM regions are tested byte wide with no IC location given ("-").
 //
 //   0000-7FFF ROM H16 1st half
 //   8000-BFFF ROM banked 16KB at a time by F000 D0-D2,
@@ -93,7 +92,7 @@ static const unsigned long s_watchdogTimeoutInMs  = 3000;
 // RAM region is the same for all games on this board set.
 //
 static const RAM_REGION s_ramRegion[] PROGMEM = { //                                                                         "012", "012345"
-                                                  {CKikiKaikaiBaseGame::onBankSwitchHoldResets, 0xC000, 0xE7FF, 1, 0xFF, "D13", "Shared"}, // RAM shared with the sound CPU, TMM2064 D1 & D3
+                                                  {CKikiKaikaiBaseGame::onBankSwitchHoldResets, 0xC000, 0xE7FF, 1, 0xFF, " - ", "Shared"}, // RAM shared with the sound CPU
                                                   {CKikiKaikaiBaseGame::onBankSwitchHoldResets, 0xE800, 0xE8FF, 1, 0xFF, " - ", "McuRam"}, // RAM shared with the MCU
                                                   {CKikiKaikaiBaseGame::onBankSwitchHoldResets, 0xE900, 0xEFFF, 1, 0xFF, " - ", "Prog. "}, // RAM
                                                   {0}
