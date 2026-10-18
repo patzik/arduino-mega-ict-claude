@@ -67,11 +67,8 @@
 //   The joystick & coin inputs are read by the MCU and the DIP switches
 //   by the YM2203 on the sound CPU, so they are not in the input list here.
 //
-//   The sound CPU & MCU are held in reset (F008 D1 & D2 = 0) before the RAM
-//   is tested so they don't interfere with it. MAME notes the game usually
-//   sets the unknown D3 & D4 so they are set by default (F008 = 0x18). The
-//   "F008 Hold" custom function cycles the value used between 0x00, 0x08,
-//   0x10 & 0x18 for investigating the RAM access on a PCB.
+//   The sound CPU & MCU are held in reset (F008 = 0) before the shared RAM
+//   is tested so they don't interfere with it.
 //
 // void base_state::main_map(address_map &map)
 //
@@ -129,7 +126,6 @@ static const OUTPUT_REGION s_outputRegion[] PROGMEM = { //                      
 //
 static const CUSTOM_FUNCTION s_customFunction[] PROGMEM = { //                                      "0123456789"
                                                             {CKikiKaikaiBaseGame::watchdogKick,     "WD Kick   "},
-                                                            {CKikiKaikaiBaseGame::holdResetsSelect, "F008 Hold "},
                                                             {CKikiKaikaiBaseGame::cycleTypeSelect,  "Cycle Type"},
                                                             {NO_CUSTOM_FUNCTION}}; // end of list
 
@@ -146,8 +142,7 @@ CKikiKaikaiBaseGame::CKikiKaikaiBaseGame(
            s_outputRegion,
            s_customFunction),
     m_watchdogTime(0),
-    m_inWatchdogWrite(false),
-    m_holdResetsValue(0x18)
+    m_inWatchdogWrite(false)
 {
     // The RAM shared with the video uses WAIT and needs extra time after it.
     m_z80Cpu = new CZ80ACpu(0,
@@ -254,7 +249,7 @@ CKikiKaikaiBaseGame::onBankSwitchHoldResets(
     CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
     ICpu                *cpu      = thisGame->m_cpu;
 
-    return cpu->memoryWrite(s_KikiKaikaiResetAddress, thisGame->m_holdResetsValue);
+    return cpu->memoryWrite(s_KikiKaikaiResetAddress, 0x00);
 }
 
 
@@ -309,34 +304,6 @@ CKikiKaikaiBaseGame::cycleTypeSelect(
     errorCustom->code = ERROR_SUCCESS;
 
     return errorCustom;
-}
-
-
-//
-// Cycle the F008 hold value through 0x00, 0x08, 0x10 & 0x18 (D3 & D4) and
-// write it, showing the new value.
-//
-PERROR
-CKikiKaikaiBaseGame::holdResetsSelect(
-    void *cKikiKaikaiBaseGame
-)
-{
-    CKikiKaikaiBaseGame *thisGame = (CKikiKaikaiBaseGame *) cKikiKaikaiBaseGame;
-    PERROR error = errorSuccess;
-
-    thisGame->m_holdResetsValue = (thisGame->m_holdResetsValue + 0x08) & 0x18;
-
-    error = onBankSwitchHoldResets(thisGame);
-
-    if (SUCCESS(error))
-    {
-        errorCustom->code = ERROR_SUCCESS;
-        errorCustom->description = "OK: F008";
-        STRING_UINT8_HEX(errorCustom->description, thisGame->m_holdResetsValue);
-        error = errorCustom;
-    }
-
-    return error;
 }
 
 
